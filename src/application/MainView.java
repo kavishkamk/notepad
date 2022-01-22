@@ -21,10 +21,18 @@ public class MainView {
 			BorderPane root = new BorderPane();
 			
 			// create and set MunuBar
-			NotepadMenuBar menu = new NotepadMenuBar();
+			NPMenuBar menu = new NPMenuBar();
 			root.setTop(menu);
 			
-			Scene scene = new Scene(root, 464, 295);
+			// create and set Status bar
+			NPStatusBar statusBar = new NPStatusBar();
+			root.setBottom(statusBar);
+			
+			// create and set Text Area
+			NPTextArea txtArea = new NPTextArea();
+			root.setCenter(txtArea);
+			
+			Scene scene = new Scene(root, 800, 400);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.getIcons().add(new Image("logo/icon 3.png"));
 			primaryStage.setTitle("Untitled - Notepad");
