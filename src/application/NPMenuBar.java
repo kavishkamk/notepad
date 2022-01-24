@@ -23,13 +23,21 @@ public class NPMenuBar extends MenuBar{
 		// file menu
 		file = new Menu("File");
 		
-		// create "New" menu item and perform clear operation using it
+		/*
+		 * create "New" menu item and perform clear operation using it
+		 * when perform action clear text area
+		 * reset the title bar
+		 */
 		newF = createMenuItemWithKeyCombination("New", "SHORTCUT+N");
-		newF.setOnAction(event -> mainView.performActionOnTextArea(textArea -> textArea.clear()));
+		newF.setOnAction(event -> mainView.newFile());
 		
 		open = createMenuItemWithKeyCombination("Open", "SHORTCUT+O");
-		save = createMenuItemWithKeyCombination("Save", "SHORTCUT+S");
 		
+		// content save
+		save = createMenuItemWithKeyCombination("Save", "SHORTCUT+S");
+		save.setOnAction(event -> mainView.saveFile());
+		
+		// content save as..
 		saveAs = createMenuItemWithKeyCombination("Save As...", "SHORTCUT+SHIFT+S");
 		saveAs.setOnAction(event -> mainView.saveFileAs());
 		
