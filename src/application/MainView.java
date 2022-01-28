@@ -7,6 +7,8 @@ import fileHandle.TextFileHandle;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
@@ -18,9 +20,13 @@ public class MainView {
 	private Stage primaryStage;
 	private NPTextArea txtArea;
 	private FileChooser fileChooser;
+	private ButtonType alertCancel, alertSave, alertDSave;
 
 	public MainView(Stage primaryStage) {
 		this.primaryStage = primaryStage;
+		alertCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+		alertSave = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+		alertDSave = new ButtonType("Don't Save", ButtonBar.ButtonData.NO);
 		createUI();
 	}
 	
@@ -39,7 +45,7 @@ public class MainView {
 			root.setBottom(statusBar);
 			
 			// create and set Text Area
-			txtArea = new NPTextArea(false, false);
+			txtArea = new NPTextArea(this, false, true);
 			root.setCenter(txtArea);
 			
 			createFileChooser();
@@ -61,11 +67,26 @@ public class MainView {
 	
 	// open new template for new file
 	public void newFile() {
-		this.txtArea.setSave(false);
-		this.txtArea.setSaveAs(false);
-		this.txtArea.setFileLocation(null);
-		performActionOnTextArea(textArea -> textArea.clear());
-		performStageChangers(stage -> stage.setTitle("Untitled - Notepad"));
+		ButtonType type = null;
+		if(!(txtArea.getSave() && this.txtArea.getFileLocation() == null)) {
+			if(!txtArea.getSave()) {
+				type = saveOrClearTxtData();
+				if(type != alertCancel && type != null) {
+					if(type == alertSave) {
+						if(!txtArea.getSave()) {
+							saveFile();
+						}
+					}
+				} else {
+					return;
+				}
+			}
+			performActionOnTextArea(textArea -> textArea.clear());
+			this.txtArea.setFileLocation(null);
+			this.txtArea.setSaveAs(false);
+			performStageChangers(stage -> stage.setTitle("Untitled - Notepad"));
+			this.txtArea.setSave(true);
+		}
 	}
 	
 	// file save as
@@ -136,5 +157,12 @@ public class MainView {
 		Alert alert = new Alert(AlertType.ERROR, content);
 		alert.show();
 	}
-
+	
+	// this method used to ask from user to save, dont't save or ignore the request using alert box
+	private ButtonType saveOrClearTxtData() {
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setContentText("Do you want to save changers to " + this.primaryStage.getTitle() + " ?");
+		alert.getButtonTypes().setAll(alertCancel, alertSave, alertDSave);
+		return alert.showAndWait().get();
+	}
 }

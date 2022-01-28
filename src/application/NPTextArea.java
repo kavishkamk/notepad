@@ -6,6 +6,7 @@ import javafx.scene.control.TextArea;
 
 public class NPTextArea extends TextArea {
 
+	private MainView mainView;
 	private boolean saveAs, save;
 	private File fileLocation; // store current save filed
 	
@@ -15,15 +16,26 @@ public class NPTextArea extends TextArea {
 	  * save is true the open file is updated with changes, 
 	 	and false if the file not saved with updates happened in text area
 	  */
-	public NPTextArea(boolean saveAs, boolean save) {
+	public NPTextArea(MainView mainView, boolean saveAs, boolean save) {
+		this.mainView = mainView;
 		this.saveAs = saveAs;
 		this.save = save;
 		createTextArea();
 	}
 	
 	private void createTextArea() {
-		// register listener to catch changers of the current open file and set file save states as unsaved
-		this.textProperty().addListener((observable, oldVal, newVal) -> setSave(false));
+		/*
+		 * register listener to catch changers of the current open file and set file save states as unsaved
+		   if it's not already set as false
+		 * add '*' in front of the file name if the file is unsaved
+		 */
+		this.textProperty().addListener((observable, oldVal, newVal) -> {
+			if(getSave()) {
+				setSave(false);
+				mainView.performStageChangers(stage -> stage.setTitle("*".concat(stage.getTitle())));
+			}
+			
+		});
 	}
 	
 	public void setSaveAs(boolean saveAs) {
