@@ -42,7 +42,10 @@ public class NPMenuBar extends MenuBar{
 		saveAs.setOnAction(event -> mainView.saveFileAs());
 		
 		print = createMenuItemWithKeyCombination("Print", "SHORTCUT+P");
+		
 		exit = new MenuItem("Exit");
+		exit.setOnAction(event -> mainView.exitFromPlatform());
+		
 		file.getItems().addAll(newF, open, save, saveAs, new SeparatorMenuItem(), print, new SeparatorMenuItem(), exit);
 		
 		// edit menu

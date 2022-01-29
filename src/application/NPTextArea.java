@@ -61,5 +61,9 @@ public class NPTextArea extends TextArea {
 	public File getFileLocation() {
 		return this.fileLocation;
 	}
+	
+	public String getFileName() {
+		return this.fileLocation.getName();
+	}
 
 }

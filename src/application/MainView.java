@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.function.Consumer;
 
 import fileHandle.TextFileHandle;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -14,6 +15,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class MainView {
 	
@@ -24,9 +26,10 @@ public class MainView {
 
 	public MainView(Stage primaryStage) {
 		this.primaryStage = primaryStage;
-		alertCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-		alertSave = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
-		alertDSave = new ButtonType("Don't Save", ButtonBar.ButtonData.NO);
+		this.primaryStage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, this::exitFromPlatform); //  Listener for window close request 
+		alertCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE); // cancel button type
+		alertSave = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE); // OK button type
+		alertDSave = new ButtonType("Don't Save", ButtonBar.ButtonData.NO); // No button type
 		createUI();
 	}
 	
@@ -65,22 +68,32 @@ public class MainView {
 		primaryStage.show();
 	}
 	
-	// open new template for new file
+	// close the application
+	// this show alert box using isPreseedAction() and according to the result (CANCEL , OK - save and exit, NO - dont't save and exit) perform action 
+	public void exitFromPlatform(WindowEvent event) {
+		if(!isProseedAction("Exit Program", "Confirm Exit", "Do you want to save changes to " + this.primaryStage.getTitle() + " ?")) {
+			event.consume();
+		}
+	}
+	
+	// close the application
+	// this show alert box using isPreseedAction() and according to the result (CANCEL, OK - save and exit, NO - don't save and exit) perform action 
+	public void exitFromPlatform() {
+		if(isProseedAction("Exit Program", "Confirm Exit", "Do you want to save changes to " + this.primaryStage.getTitle() + " ?")) {
+			Platform.exit();
+		}
+	}
+	
+	/*
+	 * open new template for new file
+	 * this show alert box using isProseedAction() and according to the result (CANCEL, OK - save and open, NO - don't save and open) perform action
+	 * actions - > clear text area
+	 *         - > set Previous file location to null, set as not saveAs(saveAs = false, save = true)
+	 *         - > set stage title as untitled
+	 */
+	
 	public void newFile() {
-		ButtonType type = null;
-		if(!(txtArea.getSave() && this.txtArea.getFileLocation() == null)) {
-			if(!txtArea.getSave()) {
-				type = saveOrClearTxtData();
-				if(type != alertCancel && type != null) {
-					if(type == alertSave) {
-						if(!txtArea.getSave()) {
-							saveFile();
-						}
-					}
-				} else {
-					return;
-				}
-			}
+		if(isProseedAction("Open new","New Confirm", "Do you want to save changers to " + this.primaryStage.getTitle() + " ?")) {
 			performActionOnTextArea(textArea -> textArea.clear());
 			this.txtArea.setFileLocation(null);
 			this.txtArea.setSaveAs(false);
@@ -89,8 +102,41 @@ public class MainView {
 		}
 	}
 	
-	// file save as
-	// if fail saving process show error notification
+	/*
+	 * when this call it asked to save, don't save or cancel the request using alert box
+	 * if request CANCEL return "false"
+	 * if request OK, call to save changers of the file and return true
+	 * if request No, return true
+	 * if nothing to save return true directly
+	 */
+	private boolean isProseedAction(String title, String head, String content) {
+		ButtonType type = null;
+		
+		if(!(txtArea.getSave() && this.txtArea.getFileLocation() == null)) {
+			if(!txtArea.getSave()) {
+				type = exitAlert(title, head, content);
+				if(type != alertCancel && type != null) {
+					if(type == alertSave) {
+						if(!txtArea.getSave()) {
+							saveFile();
+						}
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	/*
+	 * file save as
+	 * if fail saving process show error notification
+	 * if success -> setFileSaveAs(saveAs = true, save = true)
+	 *            -> set stage title name with saved file name
+	 *            -> set saved file File in NPTextArea
+	 */
 	public void saveFileAs() {
 		fileChooser.setTitle("Save As...");
 		File file = fileChooser.showSaveDialog(this.primaryStage);
@@ -115,6 +161,7 @@ public class MainView {
 			if(!this.txtArea.getSave()) {
 				if(new TextFileHandle().saveTextToGivenFile(this.txtArea.getFileLocation(), this.txtArea.getText())) {
 					this.txtArea.setSave(true);
+					performStageChangers(stage -> stage.setTitle(this.txtArea.getFileName()));
 				} else {
 					popupErrorAlert("Some unexpected error occured during file saving...");
 				}
@@ -158,10 +205,12 @@ public class MainView {
 		alert.show();
 	}
 	
-	// this method used to ask from user to save, dont't save or ignore the request using alert box
-	private ButtonType saveOrClearTxtData() {
+	// show alert box and return the result ButtonType (alertCancel, alertSave, alertDSave)
+	private ButtonType exitAlert(String title, String head, String content) {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setContentText("Do you want to save changers to " + this.primaryStage.getTitle() + " ?");
+		alert.setTitle(title);
+		alert.setHeaderText(head);
+		alert.setContentText(content);
 		alert.getButtonTypes().setAll(alertCancel, alertSave, alertDSave);
 		return alert.showAndWait().get();
 	}
