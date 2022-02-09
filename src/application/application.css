@@ -7,3 +7,8 @@
 .text-area > .scroll-pane {
 	-fx-vbar-policy: always;
 }
+
+#tempScroolBar > .scroll-pane {
+	-fx-vbar-policy: never;
+	-fx-hbar-policy: never;
+}

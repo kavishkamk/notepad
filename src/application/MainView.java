@@ -5,13 +5,24 @@ import java.util.function.Consumer;
 
 import fileHandle.TextFileHandle;
 import javafx.application.Platform;
+import javafx.print.JobSettings;
+import javafx.print.PageLayout;
+import javafx.print.Printer;
+import javafx.print.PrinterAttributes;
+import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.transform.Translate;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -23,6 +34,7 @@ public class MainView {
 	private NPTextArea txtArea;
 	private FileChooser fileChooser;
 	private ButtonType alertCancel, alertSave, alertDSave;
+	private BorderPane root;
 
 	public MainView(Stage primaryStage) {
 		this.primaryStage = primaryStage;
@@ -37,7 +49,7 @@ public class MainView {
 	private void createUI() {
 		
 		try {
-			BorderPane root = new BorderPane();
+			root = new BorderPane();
 			
 			// create and set MunuBar
 			NPMenuBar menu = new NPMenuBar(this);
@@ -66,6 +78,24 @@ public class MainView {
 	// set visible this UI
 	public void show() {
 		primaryStage.show();
+	}
+	
+	public void openFile() {
+		if(isProseedAction("Open File","Open Confirm", "Do you want to save changers to " + this.primaryStage.getTitle() + " ?")) {
+			fileChooser.setTitle("Open");
+			File selectedFile = fileChooser.showOpenDialog(this.primaryStage);
+			if(selectedFile != null) {
+				performActionOnTextArea(textArea -> textArea.clear());
+				String str = new TextFileHandle().readTextFile(selectedFile);
+				this.txtArea.setFileLocation(selectedFile);
+				this.txtArea.setSaveAs(true);
+				if(str != null) {
+					performActionOnTextArea(textArea -> textArea.setText(str));
+				}
+				performStageChangers(stage -> stage.setTitle(selectedFile.getName()));
+				this.txtArea.setSave(true);
+			}
+		}
 	}
 	
 	// close the application
@@ -213,5 +243,61 @@ public class MainView {
 		alert.setContentText(content);
 		alert.getButtonTypes().setAll(alertCancel, alertSave, alertDSave);
 		return alert.showAndWait().get();
+	}
+	
+	// print content
+	public void printText() {
+		
+		PrinterJob job = PrinterJob.createPrinterJob();
+		
+		if(job == null) {
+			System.out.println("Error");
+			return;
+		}
+		
+		boolean proseed = job.showPrintDialog(root.getScene().getWindow());
+		
+		JobSettings ss1 = job.getJobSettings();
+		
+		PageLayout pageLayout1 = ss1.getPageLayout();
+		
+        double pgW1 = pageLayout1.getPrintableWidth();
+        double pgH1 = pageLayout1.getPrintableHeight();
+        
+        HBox h = new HBox();
+        Label tempText = createPrinterLabel(txtArea.getText(), pgW1);
+        Label tempText2 = createPrinterLabel(txtArea.getText(), pgW1);
+        h.getChildren().add(tempText);
+        Scene s = new Scene(h);
+        tempText.applyCss();
+        System.out.println("Font Size " + tempText.getFont().getSize());
+        
+        double fullLabelHeight = tempText.prefHeight(-1);
+        System.out.println(tempText.prefWidth(-1));
+        System.out.println(tempText.prefHeight(fullLabelHeight));     
+        
+        int numberOfPages = (int) Math.ceil(fullLabelHeight/ pgH1);
+        System.out.println(numberOfPages);
+        
+        Translate gridTransform = new Translate(0,0);
+        tempText2.getTransforms().add(gridTransform);
+		
+		if(proseed) {
+			for(int i = 0; i < numberOfPages; i++) {
+	            gridTransform.setY(-i * (pgH1));
+	            job.printPage(tempText2);
+	        }
+			
+			job.endJob();	
+		}
+	}
+	
+	// create label in given string and width and set wrapping
+	private Label createPrinterLabel(String txt, double printableWidth) {
+		Label label = new Label();
+		label.setPrefWidth(printableWidth);
+        label.setWrapText(true);
+        label.setText(txt);
+        return label;
 	}
 }

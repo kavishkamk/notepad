@@ -32,6 +32,7 @@ public class NPMenuBar extends MenuBar{
 		newF.setOnAction(event -> mainView.newFile());
 		
 		open = createMenuItemWithKeyCombination("Open", "SHORTCUT+O");
+		open.setOnAction(event -> mainView.openFile());
 		
 		// content save
 		save = createMenuItemWithKeyCombination("Save", "SHORTCUT+S");
@@ -42,6 +43,7 @@ public class NPMenuBar extends MenuBar{
 		saveAs.setOnAction(event -> mainView.saveFileAs());
 		
 		print = createMenuItemWithKeyCombination("Print", "SHORTCUT+P");
+		print.setOnAction(event -> mainView.printText());
 		
 		exit = new MenuItem("Exit");
 		exit.setOnAction(event -> mainView.exitFromPlatform());
