@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 
 import fileHandle.TextFileHandle;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.print.JobSettings;
 import javafx.print.PageLayout;
 import javafx.print.Printer;
@@ -20,6 +21,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Translate;
@@ -111,6 +113,7 @@ public class MainView {
 	public void exitFromPlatform() {
 		if(isProseedAction("Exit Program", "Confirm Exit", "Do you want to save changes to " + this.primaryStage.getTitle() + " ?")) {
 			Platform.exit();
+			System.exit(0);
 		}
 	}
 	
@@ -270,14 +273,10 @@ public class MainView {
         h.getChildren().add(tempText);
         Scene s = new Scene(h);
         tempText.applyCss();
-        System.out.println("Font Size " + tempText.getFont().getSize());
         
-        double fullLabelHeight = tempText.prefHeight(-1);
-        System.out.println(tempText.prefWidth(-1));
-        System.out.println(tempText.prefHeight(fullLabelHeight));     
+        double fullLabelHeight = tempText.prefHeight(-1); 
         
         int numberOfPages = (int) Math.ceil(fullLabelHeight/ pgH1);
-        System.out.println(numberOfPages);
         
         Translate gridTransform = new Translate(0,0);
         tempText2.getTransforms().add(gridTransform);
@@ -298,6 +297,7 @@ public class MainView {
 		label.setPrefWidth(printableWidth);
         label.setWrapText(true);
         label.setText(txt);
+        label.setPadding(new Insets (0));
         return label;
 	}
 }
