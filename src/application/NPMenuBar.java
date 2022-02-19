@@ -1,6 +1,9 @@
 package application;
 
 import javafx.geometry.Insets;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -11,7 +14,7 @@ public class NPMenuBar extends MenuBar{
 	
 	private MainView mainView;
 	private Menu file, edit, help;
-	private MenuItem newF, open, save, saveAs, print, exit, about;
+	private MenuItem newF, open, save, saveAs, print, exit, about, copy, paste, cut, selectAll;
 	
 	public NPMenuBar(MainView mainView) {
 		this.mainView = mainView;
@@ -53,9 +56,25 @@ public class NPMenuBar extends MenuBar{
 		// edit menu
 		edit = new Menu("Edit");
 		
+		copy = createMenuItemWithKeyCombination("Copy", "SHORTCUT+C");
+		copy.setOnAction(event -> mainView.copySelectedText());
+		
+		paste = createMenuItemWithKeyCombination("Paste", "SHORTCUT+V");
+		paste.setOnAction(event -> mainView.pasteCopyedText());
+		
+		cut = createMenuItemWithKeyCombination("Cut", "SHORTCUT+X");
+		cut.setOnAction(event -> mainView.cutSelectedText());
+		
+		selectAll = createMenuItemWithKeyCombination("Select All", "SHORTCUT+A");
+		selectAll.setOnAction(event -> mainView.selectAll());
+		
+		edit.getItems().addAll(copy, paste, cut, selectAll);
+		
 		// help menu
 		help = new Menu("Help");
 		about = new MenuItem("About");
+		about.setOnAction(event -> showAboutDialog());
+		
 		help.getItems().addAll(about);
 		
 		this.setPadding(new Insets(0));
@@ -67,6 +86,18 @@ public class NPMenuBar extends MenuBar{
 		MenuItem menuItem = new MenuItem(str);
 		menuItem.setAccelerator(KeyCombination.keyCombination(keyComb));
 		return menuItem;
+	}
+	
+	// show about dialog
+	private void showAboutDialog() {
+		ButtonType loginButtonType = new ButtonType("OK", ButtonData.OK_DONE);
+		Dialog<String> aboutDialog = new Dialog<>();
+		aboutDialog.initOwner(mainView.getStage());
+		aboutDialog.setTitle("About Notepad");
+		aboutDialog.setContentText("This is a basic notepad");
+		aboutDialog.getDialogPane().getButtonTypes().add(loginButtonType);
+		aboutDialog.getDialogPane().lookupButton(loginButtonType).setDisable(false);
+		aboutDialog.showAndWait();
 	}
 
 }

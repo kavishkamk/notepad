@@ -8,8 +8,6 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.print.JobSettings;
 import javafx.print.PageLayout;
-import javafx.print.Printer;
-import javafx.print.PrinterAttributes;
 import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -17,13 +15,9 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Translate;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -251,7 +245,7 @@ public class MainView {
 	// print content
 	public void printText() {
 		
-		PrinterJob job = PrinterJob.createPrinterJob();
+		PrinterJob job = PrinterJob.createPrinterJob(); // create printer job
 		
 		if(job == null) {
 			System.out.println("Error");
@@ -264,9 +258,11 @@ public class MainView {
 		
 		PageLayout pageLayout1 = ss1.getPageLayout();
 		
+		// get printable with and height
         double pgW1 = pageLayout1.getPrintableWidth();
         double pgH1 = pageLayout1.getPrintableHeight();
         
+        // create label in HBox to print
         HBox h = new HBox();
         Label tempText = createPrinterLabel(txtArea.getText(), pgW1);
         Label tempText2 = createPrinterLabel(txtArea.getText(), pgW1);
@@ -274,21 +270,47 @@ public class MainView {
         Scene s = new Scene(h);
         tempText.applyCss();
         
-        double fullLabelHeight = tempText.prefHeight(-1); 
+        double fullLabelHeight = tempText.prefHeight(-1); // get label height
         
-        int numberOfPages = (int) Math.ceil(fullLabelHeight/ pgH1);
+        int numberOfPages = (int) Math.ceil(Math.ceil(fullLabelHeight)/ Math.floor(pgH1)); // calculate number of pages
         
         Translate gridTransform = new Translate(0,0);
         tempText2.getTransforms().add(gridTransform);
 		
+        // print
 		if(proseed) {
 			for(int i = 0; i < numberOfPages; i++) {
-	            gridTransform.setY(-i * (pgH1));
+	            gridTransform.setY(-i * Math.floor(pgH1));
 	            job.printPage(tempText2);
 	        }
 			
 			job.endJob();	
 		}
+	}
+	
+	// copy selected text to clip board
+	public void copySelectedText() {
+		this.txtArea.copy();
+	}
+	
+	// past from clip board
+	public void pasteCopyedText() {
+		this.txtArea.paste();
+	}
+	
+	// cut selected text
+	public void cutSelectedText() {
+		this.txtArea.cut();
+	}
+	
+	// get Stage
+	public void selectAll() {
+		this.txtArea.selectAll();
+	}
+	
+	// get Stage
+	public Stage getStage() {
+		return this.primaryStage;
 	}
 	
 	// create label in given string and width and set wrapping
